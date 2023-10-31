@@ -23,6 +23,8 @@ public struct TextView<Label: View>: View {
     
     fileprivate var label: Label
     fileprivate var data: _TextViewDataBinding
+    private var heightToFit: Binding<CGFloat>?
+    private var selectedRange: Binding<NSRange>?
     fileprivate var configuration: _Configuration
     fileprivate var customAppKitOrUIKitClassConfiguration = _CustomAppKitOrUIKitClassConfiguration()
     
@@ -50,6 +52,8 @@ public struct TextView<Label: View>: View {
                 _TextView<Label>(
                     updater: representableUpdater,
                     data: data,
+                    heightToFit: heightToFit,
+                    selectedRange: selectedRange,
                     configuration: configuration,
                     customAppKitOrUIKitClassConfiguration: customAppKitOrUIKitClassConfiguration
                 )
@@ -66,20 +70,28 @@ extension TextView where Label == EmptyView {
     @_spi(Internal)
     public init(
         data: _TextViewDataBinding,
+        heightToFit: Binding<CGFloat>? = nil,
+        selectedRange: Binding<NSRange>? = nil,
         configuration: _Configuration
     ) {
         self.label = EmptyView()
         self.data = data
+        self.heightToFit = heightToFit
+        self.selectedRange = selectedRange
         self.configuration = configuration
     }
 
     public init(
         text: Binding<String>,
+        heightToFit: Binding<CGFloat>? = nil,
+        selectedRange: Binding<NSRange>? = nil,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
         onCommit: @escaping () -> Void = { }
     ) {
         self.label = EmptyView()
         self.data = .string(text)
+        self.heightToFit = heightToFit
+        self.selectedRange = selectedRange
         self.configuration = .init(
             isConstant: false,
             onEditingChanged: onEditingChanged,
@@ -89,11 +101,15 @@ extension TextView where Label == EmptyView {
     
     public init(
         text: Binding<String?>,
+        heightToFit: Binding<CGFloat>? = nil,
+        selectedRange: Binding<NSRange>? = nil,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
         onCommit: @escaping () -> Void = { }
     ) {
         self.init(
             text: text.withDefaultValue(String()),
+            heightToFit: heightToFit,
+            selectedRange: selectedRange,
             onEditingChanged: onEditingChanged,
             onCommit: onCommit
         )
@@ -101,6 +117,8 @@ extension TextView where Label == EmptyView {
     
     public init(
         text: Binding<NSMutableAttributedString>,
+        heightToFit: Binding<CGFloat>? = nil,
+        selectedRange: Binding<NSRange>? = nil,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
         onCommit: @escaping () -> Void = { }
     ) {
@@ -119,6 +137,8 @@ extension TextView where Label == EmptyView {
                 }
             )
         )
+        self.heightToFit = heightToFit
+        self.selectedRange = selectedRange
         self.configuration = .init(
             isConstant: false,
             onEditingChanged: onEditingChanged,
@@ -127,10 +147,14 @@ extension TextView where Label == EmptyView {
     }
     
     public init(
-        _ text: String
+        _ text: String,
+        heightToFit: Binding<CGFloat>? = nil,
+        selectedRange: Binding<NSRange>? = nil
     ) {
         self.label = EmptyView()
         self.data = .string(.constant(text))
+        self.heightToFit = heightToFit
+        self.selectedRange = selectedRange
         self.configuration = .init(
             isConstant: true,
             onEditingChanged: { _ in },
@@ -139,10 +163,14 @@ extension TextView where Label == EmptyView {
     }
     
     public init(
-        _ text: NSAttributedString
+        _ text: NSAttributedString,
+        heightToFit: Binding<CGFloat>? = nil,
+        selectedRange: Binding<NSRange>? = nil
     ) {
         self.label = EmptyView()
         self.data = .cocoaAttributedString(.constant(text))
+        self.heightToFit = heightToFit
+        self.selectedRange = selectedRange
         self.configuration = .init(
             isConstant: true,
             onEditingChanged: { _ in },
@@ -152,10 +180,14 @@ extension TextView where Label == EmptyView {
     
     @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
     public init(
-        _ text: AttributedString
+        _ text: AttributedString,
+        heightToFit: Binding<CGFloat>? = nil,
+        selectedRange: Binding<NSRange>? = nil
     ) {
         self.label = EmptyView()
         self.data = .attributedString(Binding<AttributedString>.constant(text))
+        self.heightToFit = heightToFit
+        self.selectedRange = selectedRange
         self.configuration = .init(
             isConstant: true,
             onEditingChanged: { _ in },
@@ -170,11 +202,15 @@ extension TextView: DefaultTextInputType where Label == Text {
     public init<S: StringProtocol>(
         _ title: S,
         text: Binding<String>,
+        heightToFit: Binding<CGFloat>? = nil,
+        selectedRange: Binding<NSRange>? = nil,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
         onCommit: @escaping () -> Void = { }
     ) {
         self.label = Text(title).foregroundColor(.placeholderText)
         self.data = .string(text)
+        self.heightToFit = heightToFit
+        self.selectedRange = selectedRange
         self.configuration = .init(
             isConstant: false,
             onEditingChanged: onEditingChanged,
@@ -191,6 +227,8 @@ extension TextView: DefaultTextInputType where Label == Text {
         self.init(
             title,
             text: text.withDefaultValue(String()),
+            heightToFit: nil,
+            selectedRange: nil,
             onEditingChanged: onEditingChanged,
             onCommit: onCommit
         )
@@ -328,11 +366,19 @@ extension TextView {
     public func isSelectable(_ isSelectable: Bool) -> Self {
         then({ $0.configuration.isSelectable = isSelectable })
     }
+
+    public func selectEndOfTextUponFocus(_ selectEndOfTextUponFocus: Bool) -> Self {
+        then({ $0.configuration.selectEndOfTextUponFocus = selectEndOfTextUponFocus })
+    }
 }
 
 @available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
 @available(watchOS, unavailable)
 extension TextView {
+    public func interceptReturn(_ interceptReturn: Bool) -> Self {
+        then({ $0.configuration.interceptReturn = interceptReturn })
+    }
+
     public func dismissKeyboardOnReturn(_ dismissKeyboardOnReturn: Bool) -> Self {
         then({ $0.configuration.dismissKeyboardOnReturn = dismissKeyboardOnReturn })
     }
@@ -361,7 +407,7 @@ extension TextView {
     public func isFirstResponder(_ isFirstResponder: Bool) -> Self {
         then({ $0.configuration.isFirstResponder = isFirstResponder })
     }
-    
+
     @available(*, deprecated, renamed: "TextView.editable(_:)")
     public func isEditable(_ isEditable: Bool) -> Self {
         self.editable(isEditable)

@@ -58,6 +58,8 @@ public struct SearchBar: DefaultTextInputType {
     public init<S: StringProtocol>(
         _ title: S,
         text: Binding<String>,
+        heightToFit: Binding<CGFloat>?,
+        selectedRange: Binding<NSRange>?,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
         onCommit: @escaping () -> Void = { }
     ) {
@@ -70,6 +72,8 @@ public struct SearchBar: DefaultTextInputType {
     public init<S: StringProtocol>(
         _ title: S,
         text: Binding<String>,
+        heightToFit: Binding<CGFloat>?,
+        selectedRange: Binding<NSRange>?,
         isEditing: Binding<Bool>,
         onCommit: @escaping () -> Void = { }
     ) {
@@ -86,6 +90,8 @@ public struct SearchBar: DefaultTextInputType {
 
     public init(
         text: Binding<String>,
+        heightToFit: Binding<CGFloat>?,
+        selectedRange: Binding<NSRange>?,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
         onCommit: @escaping () -> Void = { }
     ) {

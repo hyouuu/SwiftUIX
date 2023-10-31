@@ -12,6 +12,8 @@ extension _PlatformTextView {
     public static func updateAppKitOrUIKitTextView(
         _ view: AppKitOrUIKitTextView,
         data: _TextViewDataBinding,
+        heightToFit: Binding<CGFloat>?,
+        selectedRange: Binding<NSRange>?,
         configuration: TextView<Label>._Configuration,
         context: some _AppKitOrUIKitViewRepresentableContext
     ) {
@@ -118,6 +120,8 @@ extension _PlatformTextView {
                 view.font = font
             }
         }
+
+        _TextView<Label>.updateHeightToFit(view, heightToFit: heightToFit, onlyIfNotSetYet: true)
     }
         
     correctCursorOffset: do {
@@ -144,6 +148,10 @@ extension _PlatformTextView {
             if let isFocused = configuration.isFocused, view.window != nil {
                 if isFocused.wrappedValue && !view.isFirstResponder {
                     view.becomeFirstResponder()
+                    if configuration.selectEndOfTextUponFocus {
+                        let endPos = view.endOfDocument
+                        view.selectedTextRange = view.textRange(from: endPos, to: endPos)
+                    }
                 } else if !isFocused.wrappedValue && view.isFirstResponder {
                     view.resignFirstResponder()
                 }

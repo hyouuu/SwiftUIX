@@ -22,6 +22,8 @@ struct _TextView<Label: View> {
     @ObservedObject var updater: EmptyObservableObject
     
     let data: _TextViewDataBinding
+    let heightToFit: Binding<CGFloat>?
+    let selectedRange: Binding<NSRange>?
     let configuration: Configuration
     let customAppKitOrUIKitClassConfiguration: TextView<Label>._CustomAppKitOrUIKitClassConfiguration
 }
@@ -91,6 +93,14 @@ extension _TextView: AppKitOrUIKitViewRepresentable {
             DispatchQueue.main.async {
                 if (configuration.isInitialFirstResponder ?? configuration.isFocused?.wrappedValue) ?? false {
                     view._SwiftUIX_becomeFirstResponder()
+                    if configuration.selectEndOfTextUponFocus {
+                        #if os(iOS) || os(tvOS)
+                        let endPos = view.endOfDocument
+                        view.selectedTextRange = view.textRange(from: endPos, to: endPos)
+                        #elseif os(macOS)
+                        // TODO: What to do here?
+                        #endif
+                    }
                 }
             }
         }
@@ -121,6 +131,8 @@ extension _TextView: AppKitOrUIKitViewRepresentable {
                 _PlatformTextView<Label>.updateAppKitOrUIKitTextView(
                     view,
                     data: self.data,
+                    heightToFit: heightToFit,
+                    selectedRange: selectedRange,
                     configuration: configuration,
                     context: context
                 )
@@ -148,22 +160,35 @@ extension _TextView {
     class Coordinator: NSObject, UITextViewDelegate {
         var updater: EmptyObservableObject
         var data: _TextViewDataBinding
+        var heightToFit: Binding<CGFloat>?
+        var selectedRange: Binding<NSRange>?
         var configuration: Configuration
         
         init(
             updater: EmptyObservableObject,
             data: _TextViewDataBinding,
+            heightToFit: Binding<CGFloat>?,
+            selectedRange: Binding<NSRange>?,
             configuration: Configuration
         ) {
             self.updater = updater
             self.data = data
+            self.heightToFit = heightToFit
+            self.selectedRange = selectedRange
             self.configuration = configuration
         }
         
         func textViewDidBeginEditing(_ textView: UITextView) {
             configuration.onEditingChanged(true)
         }
-        
+
+        func textViewDidChangeSelection(_ textView: UITextView) {
+            // So that when onDeleteBackward is called we still have the previous range there
+            DispatchQueue.main.async {
+                self.selectedRange?.wrappedValue = textView.selectedRange
+            }
+        }
+
         func textViewDidChange(_ textView: UITextView) {
             if let textView = textView as? _PlatformTextView<Label> {
                 guard !textView.representatableStateFlags.contains(.dismantled) else {
@@ -178,6 +203,8 @@ extension _TextView {
             }
                         
             self.data.wrappedValue = data
+
+            _TextView.updateHeightToFit(textView, heightToFit: heightToFit)
         }
         
         func textView(
@@ -185,7 +212,24 @@ extension _TextView {
             shouldChangeTextIn range: NSRange,
             replacementText text: String
         ) -> Bool {
-            if configuration.dismissKeyboardOnReturn {
+            if configuration.interceptReturn, text == "\n" {
+                DispatchQueue.main.async {
+                    #if os(iOS)
+                    guard textView.isFirstResponder else {
+                        return
+                    }
+
+                    self.configuration.onCommit?()
+
+                    if self.configuration.dismissKeyboardOnReturn {
+                        textView.resignFirstResponder()
+                    }
+                    #endif
+                }
+
+                return false
+
+            } else if configuration.dismissKeyboardOnReturn {
                 if text == "\n" {
                     DispatchQueue.main.async {
                         #if os(iOS)
@@ -198,7 +242,7 @@ extension _TextView {
                         textView.resignFirstResponder()
                         #endif
                     }
-                    
+
                     return false
                 }
             }
@@ -219,15 +263,21 @@ extension _TextView {
     class Coordinator: NSObject, NSTextViewDelegate {
         var updater: EmptyObservableObject
         var data: _TextViewDataBinding
+        var heightToFit: Binding<CGFloat>?
+        var selectedRange: Binding<NSRange>?
         var configuration: Configuration
         
         init(
             updater: EmptyObservableObject,
             data: _TextViewDataBinding,
+            heightToFit: Binding<CGFloat>?,
+            selectedRange: Binding<NSRange>?,
             configuration: Configuration
         ) {
             self.updater = updater
             self.data = data
+            self.heightToFit = heightToFit
+            self.selectedRange = selectedRange
             self.configuration = configuration
         }
         
@@ -291,7 +341,13 @@ extension _TextView {
 @available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
 extension _TextView {
     func makeCoordinator() -> Coordinator {
-        Coordinator(updater: updater, data: data, configuration: configuration)
+        Coordinator(
+            updater: updater,
+            data: data,
+            heightToFit: heightToFit,
+            selectedRange: selectedRange,
+            configuration: configuration
+        )
     }
 
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
@@ -314,6 +370,18 @@ extension _TextView {
         }
                 
         return size
+    }
+
+    static func updateHeightToFit(_ textView: AppKitOrUIKitTextView,
+                                  heightToFit: Binding<CGFloat>?,
+                                  onlyIfNotSetYet: Bool = false)
+    {
+        guard let heightToFit else { return }
+        guard !onlyIfNotSetYet || heightToFit.wrappedValue <= 0 else { return }
+        DispatchQueue.main.async {
+            let size = textView.sizeThatFits(CGSize(width: textView.bounds.width, height: .greatestFiniteMagnitude))
+            heightToFit.wrappedValue = size.height
+        }
     }
 }
 

@@ -241,6 +241,8 @@ open class _PlatformTextView<Label: View>: AppKitOrUIKitTextView, NSLayoutManage
         _PlatformTextView<Label>.updateAppKitOrUIKitTextView(
             self,
             data: data,
+            heightToFit: nil,
+            selectedRange: nil,
             configuration: configuration,
             context: context
         )

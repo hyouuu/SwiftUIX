@@ -19,7 +19,8 @@ public struct _TextViewConfiguration {
     var isInitialFirstResponder: Bool?
     var isFirstResponder: Bool?
     var isFocused: Binding<Bool>? = nil
-    
+    var selectEndOfTextUponFocus: Bool = true
+
     public var isEditable: Bool = true
     public var isSelectable: Bool = true
     
@@ -37,6 +38,7 @@ public struct _TextViewConfiguration {
     #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
     var textContentType: UITextContentType?
     #endif
+    var interceptReturn: Bool = false
     var dismissKeyboardOnReturn: Bool = false
     var enablesReturnKeyAutomatically: Bool?
     #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
