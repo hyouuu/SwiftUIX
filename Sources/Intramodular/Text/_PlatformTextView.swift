@@ -29,6 +29,8 @@ public protocol _PlatformTextView_Type: _AppKitOrUIKitRepresented, AppKitOrUIKit
     @available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
     func representableDidUpdate(
         data: _TextViewDataBinding,
+        heightToFit: Binding<CGFloat>?,
+        selectedRange: Binding<NSRange>?,
         configuration: TextView<Label>._Configuration,
         context: some _AppKitOrUIKitViewRepresentableContext
     )
@@ -235,14 +237,16 @@ open class _PlatformTextView<Label: View>: AppKitOrUIKitTextView, NSLayoutManage
     
     open func representableDidUpdate(
         data: _TextViewDataBinding,
+        heightToFit: Binding<CGFloat>?,
+        selectedRange: Binding<NSRange>?,
         configuration: TextView<Label>._Configuration,
         context: some _AppKitOrUIKitViewRepresentableContext
     ) {
         _PlatformTextView<Label>.updateAppKitOrUIKitTextView(
             self,
             data: data,
-            heightToFit: nil,
-            selectedRange: nil,
+            heightToFit: heightToFit,
+            selectedRange: selectedRange,
             configuration: configuration,
             context: context
         )

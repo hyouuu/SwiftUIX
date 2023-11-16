@@ -124,6 +124,8 @@ extension _TextView: AppKitOrUIKitViewRepresentable {
                 
                 view.representableDidUpdate(
                     data: self.data,
+                    heightToFit: heightToFit,
+                    selectedRange: selectedRange,
                     configuration: configuration,
                     context: context
                 )
