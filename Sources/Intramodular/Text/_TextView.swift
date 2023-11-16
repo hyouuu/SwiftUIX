@@ -378,8 +378,12 @@ extension _TextView {
                                   heightToFit: Binding<CGFloat>?,
                                   onlyIfNotSetYet: Bool = false)
     {
-        guard let heightToFit else { return }
-        guard !onlyIfNotSetYet || heightToFit.wrappedValue <= 0 else { return }
+        guard let heightToFit else {
+            return
+        }
+        guard !onlyIfNotSetYet || heightToFit.wrappedValue <= 0 else {
+            return
+        }
         DispatchQueue.main.async {
             let size = textView.sizeThatFits(CGSize(width: textView.bounds.width, height: .greatestFiniteMagnitude))
             heightToFit.wrappedValue = size.height
