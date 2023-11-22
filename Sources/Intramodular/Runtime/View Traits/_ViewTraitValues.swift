@@ -1,5 +1,5 @@
 //
-// Copyright (c) Vatsal Maot
+// Copyright (c) Vatsal Manot
 //
 
 import SwiftUI
@@ -19,6 +19,16 @@ extension _ViewTraitValuesProtocol {
             self[_ViewTraitKeys()[keyPath: key]]
         } set {
             self[_ViewTraitKeys()[keyPath: key]] = newValue
+        }
+    }
+    
+    public subscript<T>(
+        trait: T.Type
+    ) -> T? {
+        get {
+            self[_TypeToViewTraitKeyAdaptor<T>.self]
+        } set {
+            self[_TypeToViewTraitKeyAdaptor<T>.self] = newValue
         }
     }
 }

@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-#if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
 
 import SwiftUI
 
@@ -106,7 +106,7 @@ fileprivate struct AppKitOrUIKitViewControllerResolver: AppKitOrUIKitViewControl
     var onRemoval: (AppKitOrUIKitViewController) -> Void
     
     func makeAppKitOrUIKitViewController(context: Context) -> AppKitOrUIKitViewControllerType {
-        #if os(iOS) || os(tvOS)
+        #if os(iOS) || os(tvOS) || os(visionOS)
         AppKitOrUIKitViewControllerType()
         #elseif os(macOS)
         AppKitOrUIKitViewControllerType(nibName: nil, bundle: nil)
@@ -162,7 +162,7 @@ extension View {
     }
 }
 
-#if os(iOS) ||  os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+#if os(iOS) ||  os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
 @ViewBuilder
 public func withAppKitOrUIKitViewController<Content: View>(
     @ViewBuilder _ content: @escaping (AppKitOrUIKitViewController?) -> Content
@@ -170,7 +170,7 @@ public func withAppKitOrUIKitViewController<Content: View>(
     if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
         _WithAppKitOrUIKitViewController(content: content)
     } else {
-        withInlineState(initialValue: ObservableWeakReferenceBox<AppKitOrUIKitViewController>(nil)) { viewControllerBox in
+        withInlineState(initialValue: _SwiftUIX_ObservableWeakReferenceBox<AppKitOrUIKitViewController>(nil)) { viewControllerBox in
             withInlineObservedObject(viewControllerBox.wrappedValue) { box in
                 content(box.value)
             }
@@ -208,7 +208,7 @@ extension NSViewController {
 private struct _WithAppKitOrUIKitViewController<Content: View>: View {
     let content: (AppKitOrUIKitViewController?) -> Content
 
-    @StateObject private var appKitOrUIKitViewControllerBox = ObservableWeakReferenceBox<AppKitOrUIKitViewController>(nil)
+    @StateObject private var appKitOrUIKitViewControllerBox = _SwiftUIX_ObservableWeakReferenceBox<AppKitOrUIKitViewController>(nil)
 
     var body: some View {
         content(appKitOrUIKitViewControllerBox.value)
@@ -223,8 +223,8 @@ private struct _WithAppKitOrUIKitViewController<Content: View>: View {
 }
 
 private struct _ResolveAppKitOrUIKitViewController: ViewModifier {
-    @State var _appKitOrUIKitViewControllerBox = ObservableWeakReferenceBox<AppKitOrUIKitViewController>(nil)
-    @State var presentationCoordinatorBox = ObservableWeakReferenceBox<CocoaPresentationCoordinator>(nil)
+    @State var _appKitOrUIKitViewControllerBox = _SwiftUIX_ObservableWeakReferenceBox<AppKitOrUIKitViewController>(nil)
+    @State var presentationCoordinatorBox = _SwiftUIX_ObservableWeakReferenceBox<CocoaPresentationCoordinator>(nil)
 
     init(_ appKitOrUIKitViewController: AppKitOrUIKitViewController?) {
         self._appKitOrUIKitViewControllerBox = .init(appKitOrUIKitViewController)
@@ -236,7 +236,7 @@ private struct _ResolveAppKitOrUIKitViewController: ViewModifier {
 
     func body(content: Content) -> some View {
         PassthroughView {
-            #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+            #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
             content
                 .modifier(ProvideNavigator(_appKitOrUIKitViewControllerBox: _appKitOrUIKitViewControllerBox))
             #elseif os(macOS)
@@ -267,7 +267,7 @@ private struct _ResolveAppKitOrUIKitViewController: ViewModifier {
         }
     }
 
-    #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
     private struct ProvideNavigator: ViewModifier {
         struct Navigator: SwiftUIX.Navigator {
             weak var base: AppKitOrUIKitViewController?
@@ -289,7 +289,7 @@ private struct _ResolveAppKitOrUIKitViewController: ViewModifier {
             }
         }
 
-        @ObservedObject var _appKitOrUIKitViewControllerBox: ObservableWeakReferenceBox<AppKitOrUIKitViewController>
+        @ObservedObject var _appKitOrUIKitViewControllerBox: _SwiftUIX_ObservableWeakReferenceBox<AppKitOrUIKitViewController>
 
         func body(content: Content) -> some View {
             content.environment(\.navigator, Navigator(base: _appKitOrUIKitViewControllerBox.value))
@@ -301,7 +301,7 @@ private struct _ResolveAppKitOrUIKitViewController: ViewModifier {
 #endif
 
 extension View {
-    #if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
     public func _resolveAppKitOrUIKitViewController(
         with viewController: AppKitOrUIKitViewController?
     ) -> some View {

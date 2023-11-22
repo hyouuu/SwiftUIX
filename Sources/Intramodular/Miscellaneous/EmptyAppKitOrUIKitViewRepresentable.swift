@@ -24,7 +24,7 @@ public struct EmptyAppKitOrUIKitViewRepresentable: View {
     }
 }
 
-#if os(macOS) || os(iOS) || os(tvOS) || os(xrOS)
+#if os(macOS) || os(iOS) || os(tvOS) || os(visionOS)
 extension EmptyAppKitOrUIKitViewRepresentable {
     private struct Guts: AppKitOrUIKitViewRepresentable {
         public typealias AppKitOrUIKitViewType = AppKitOrUIKitView
@@ -53,14 +53,14 @@ extension EmptyAppKitOrUIKitViewRepresentable {
             }
         }
         
-        public static func dismantleAppKitOrUIKitView(
+        /*public static func dismantleAppKitOrUIKitView(
             _ view: Self,
             coordinator: Coordinator
         ) {
             DispatchQueue.main.async {
                 view.dismantle()
             }
-        }
+        }*/
     }
 }
 #elseif os(watchOS)

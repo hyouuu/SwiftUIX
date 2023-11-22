@@ -2,14 +2,14 @@
 // Copyright (c) Vatsal Manot
 //
 
-#if os(iOS) || os(macOS) || os(tvOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
 
 #if os(macOS)
 import AppKit
 #endif
 import Swift
 import SwiftUI
-#if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
 import UIKit
 #endif
 
@@ -156,7 +156,7 @@ extension _TextView: AppKitOrUIKitViewRepresentable {
     }
 }
 
-#if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
 @available(iOS 13.0, macOS 11.0, tvOS 13.0, *)
 extension _TextView {
     class Coordinator: NSObject, UITextViewDelegate {
@@ -234,11 +234,16 @@ extension _TextView {
             } else if configuration.dismissKeyboardOnReturn {
                 if text == "\n" {
                     DispatchQueue.main.async {
-                        #if os(iOS)
+                        #if os(iOS) || os(visionOS)
                         guard textView.isFirstResponder else {
                             return
                         }
                         
+                        #if os(visionOS)
+                        guard !textView.text.isEmpty else {
+                            return
+                        }
+                        #endif
                         self.configuration.onCommit?()
                         
                         textView.resignFirstResponder()

@@ -1,17 +1,21 @@
 //
-// Copyright (c) Vatsal Maot
+// Copyright (c) Vatsal Manot
 //
 
 import SwiftUI
 
 @frozen
 public struct _VariadicViewChildren: View {
-    private let base: _VariadicView.Children
+    @usableFromInline
+    let base: _VariadicView.Children
     
+    @usableFromInline
+    @_transparent
     init(erasing base: _VariadicView.Children) {
         self.base = base
     }
     
+    @_transparent
     public var body: some View {
         base
     }

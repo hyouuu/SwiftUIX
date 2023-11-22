@@ -9,7 +9,7 @@ import SwiftUI
 public enum ModalPresentationStyle: Equatable {
     case fullScreen
     
-    #if os(iOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || os(visionOS) || targetEnvironment(macCatalyst)
     case page
     case form
     #endif
@@ -22,7 +22,7 @@ public enum ModalPresentationStyle: Equatable {
     case blurOverFullScreen
     #endif
     
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || os(macOS) || os(visionOS) || targetEnvironment(macCatalyst)
     case popover(
         permittedArrowDirections: PopoverArrowDirection = .all,
         attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds)
@@ -32,11 +32,11 @@ public enum ModalPresentationStyle: Equatable {
     case automatic
     case none
     
-    #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
     case custom(UIViewControllerTransitioningDelegate)
     #endif
         
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || os(macOS) || os(visionOS) || targetEnvironment(macCatalyst)
     public static var popover: Self {
         .popover(permittedArrowDirections: .all, attachmentAnchor: .rect(.bounds))
     }
@@ -70,7 +70,7 @@ public enum ModalPresentationStyle: Equatable {
                 return true
             case (.none, .none):
                 return true
-            #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+            #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
             case let (.custom(lhsDelegate), .custom(rhsDelegate)):
                 return lhsDelegate.isEqual(rhsDelegate)
             #endif
@@ -129,7 +129,7 @@ extension EnvironmentValues {
     }
 }
 
-#if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
 
 extension ModalPresentationStyle {
     public func toTransitioningDelegate() -> UIViewControllerTransitioningDelegate? {
@@ -146,7 +146,7 @@ extension UIModalPresentationStyle {
         switch style {
             case .fullScreen:
                 self = .fullScreen
-            #if os(iOS) || targetEnvironment(macCatalyst)
+            #if os(iOS) || os(visionOS) || targetEnvironment(macCatalyst)
             case .page:
                 self = .pageSheet
             case .form:
@@ -162,7 +162,7 @@ extension UIModalPresentationStyle {
             case .blurOverFullScreen:
                 self = .blurOverFullScreen
             #endif
-            #if os(iOS) || targetEnvironment(macCatalyst)
+            #if os(iOS) || os(visionOS) || targetEnvironment(macCatalyst)
             case .popover:
                 self = .popover
             #endif
@@ -181,7 +181,7 @@ extension UIViewController {
         switch modalPresentationStyle {
             case .fullScreen:
                 return .fullScreen
-            #if os(iOS) || targetEnvironment(macCatalyst)
+            #if os(iOS) || os(visionOS) || targetEnvironment(macCatalyst)
             case .pageSheet:
                 return .page
             case .formSheet:
@@ -197,7 +197,7 @@ extension UIViewController {
             case .blurOverFullScreen:
                 return .blurOverFullScreen
             #endif
-            #if os(iOS) || targetEnvironment(macCatalyst)
+            #if os(iOS) || os(visionOS) || targetEnvironment(macCatalyst)
             case .popover:
                 return .popover(
                     permittedArrowDirections: .init(popoverPresentationController?.permittedArrowDirections ?? .any)

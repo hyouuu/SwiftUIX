@@ -5,7 +5,7 @@
 import Swift
 import SwiftUI
 
-#if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS) || os(visionOS)
 
 import UIKit
 
@@ -166,6 +166,18 @@ extension NSFont {
     @available(macOS 11.0, *)
     public static func preferredFont(forTextStyle textStyle: TextStyle) -> NSFont {
         .preferredFont(forTextStyle: textStyle, options: [:])
+    }
+}
+
+extension NSImage {
+    @_disfavoredOverload
+    public convenience init?(cgImage: CGImage) {
+        let size = NSSize(
+            width: cgImage.width,
+            height: cgImage.height
+        )
+        
+        self.init(cgImage: cgImage, size: size)
     }
 }
 
@@ -352,7 +364,7 @@ public let NSOpenPanel_Type = unsafeBitCast(NSClassFromString("NSOpenPanel"), to
 
 #endif
 
-#if os(iOS) || os(tvOS) || os(macOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
 
 public struct _AppKitOrUIKitViewAnimation: Equatable  {
     public let options: AppKitOrUIKitView.AnimationOptions?
@@ -445,7 +457,7 @@ extension AppKitOrUIKitViewController {
     }
 }
 
-#if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS) || os(visionOS)
 extension AppKitOrUIKitView {
     public func _SwiftUIX_setNeedsLayout() {
         setNeedsLayout()
@@ -469,7 +481,7 @@ extension AppKitOrUIKitView {
 
 extension EnvironmentValues {
     struct AppKitOrUIKitViewControllerBoxKey: EnvironmentKey {
-        typealias Value = ObservableWeakReferenceBox<AppKitOrUIKitViewController>?
+        typealias Value = _SwiftUIX_ObservableWeakReferenceBox<AppKitOrUIKitViewController>?
         
         static let defaultValue: Value = nil
     }
@@ -484,7 +496,7 @@ extension EnvironmentValues {
 }
 
 public struct AppKitOrUIKitViewAdaptor<Base: AppKitOrUIKitView>: AppKitOrUIKitViewRepresentable {
-    #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
     public typealias UIViewType = Base
     #elseif os(macOS)
     public typealias NSViewType = Base
@@ -536,7 +548,7 @@ extension AppKitOrUIKitViewAdaptor {
 #endif
 
 public struct AppKitOrUIKitViewControllerAdaptor<AppKitOrUIKitViewControllerType: AppKitOrUIKitViewController>: AppKitOrUIKitViewControllerRepresentable {
-#if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
     public typealias UIViewControllerType = AppKitOrUIKitViewControllerType
 #elseif os(macOS)
     public typealias NSViewControllerType = AppKitOrUIKitViewControllerType
