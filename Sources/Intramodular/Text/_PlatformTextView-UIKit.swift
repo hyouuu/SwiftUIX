@@ -121,7 +121,7 @@ extension _PlatformTextView {
             }
         }
 
-        _TextView<Label>.updateHeightToFit(view, heightToFit: heightToFit, onlyIfNotSetYet: true)
+        _TextView<Label>.updateHeightToFit(view, heightToFit: heightToFit)
     }
         
     correctCursorOffset: do {
@@ -168,7 +168,7 @@ extension _PlatformTextView {
         (view as? _PlatformTextView<Label>)?.data = data
         (view as? _PlatformTextView<Label>)?.configuration = configuration
         
-        _TextView<Label>.updateHeightToFit(view, heightToFit: heightToFit, onlyIfNotSetYet: true)
+        _TextView<Label>.updateHeightToFit(view, heightToFit: heightToFit)
     }
     
     func _sizeThatFits(_ size: CGSize? = nil) -> CGSize? {
