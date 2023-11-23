@@ -12,6 +12,9 @@ extension _PlatformTextView {
     public static func updateAppKitOrUIKitTextView(
         _ view: AppKitOrUIKitTextView,
         data: _TextViewDataBinding,
+        // NOTE: heightToFit & selectedRange currently ignored on macOS
+        heightToFit: Binding<CGFloat>?,
+        selectedRange: Binding<NSRange>?,
         configuration: TextView<Label>._Configuration,
         context: some _AppKitOrUIKitViewRepresentableContext
     ) {
@@ -21,11 +24,19 @@ extension _PlatformTextView {
             return
         }
         
-        view._update(data: data, configuration: configuration, context: context)
+        view._update(
+            data: data,
+            heightToFit: heightToFit,
+            selectedRange: selectedRange,
+            configuration: configuration,
+            context: context
+        )
     }
     
     private func _update(
         data: _TextViewDataBinding,
+        heightToFit: Binding<CGFloat>?,
+        selectedRange: Binding<NSRange>?,
         configuration: TextView<Label>._Configuration,
         context: some _AppKitOrUIKitViewRepresentableContext
     ) {
