@@ -109,10 +109,17 @@ extension _PlatformTextView {
                     return attributes
                 }
                 
-                view.attributedText = data.wrappedValue.toAttributedString(attributes: attributedStringAttributes())
+                let astr = data.wrappedValue.toAttributedString(attributes: attributedStringAttributes())
+                if view.attributedText != astr {
+                    view.attributedText = astr
+                    _TextView<Label>.updateHeightToFit(view, heightToFit: heightToFit)
+                }
             } else {
                 if let text = data.wrappedValue.stringValue {
-                    view.text = text
+                    if view.text != text {
+                        view.text = text
+                        _TextView<Label>.updateHeightToFit(view, heightToFit: heightToFit)
+                    }
                 } else {
                     assertionFailure()
                 }
@@ -120,8 +127,6 @@ extension _PlatformTextView {
                 view.font = font
             }
         }
-
-        _TextView<Label>.updateHeightToFit(view, heightToFit: heightToFit)
     }
         
     correctCursorOffset: do {
