@@ -170,10 +170,12 @@ extension _PlatformTextView {
         }
     }
         
-        (view as? _PlatformTextView<Label>)?.data = data
+        let existingData = (view as? _PlatformTextView<Label>)?.data
+        if existingData?.wrappedValue != data.wrappedValue {
+            (view as? _PlatformTextView<Label>)?.data = data
+            _TextView<Label>.updateHeightToFit(view, heightToFit: heightToFit)
+        }
         (view as? _PlatformTextView<Label>)?.configuration = configuration
-        
-        _TextView<Label>.updateHeightToFit(view, heightToFit: heightToFit)
     }
     
     func _sizeThatFits(_ size: CGSize? = nil) -> CGSize? {
